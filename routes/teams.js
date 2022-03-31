@@ -15,8 +15,8 @@ function teams(app) {
   });
 
   router.post("/", isRegular, async (req, res) => {
-    /* los datos del usuario estan en el req.user porque el middleware decodificó el token del usuario y sus datos lo guardo en req.user */
     const team = await teamsService.create(req.user.id, req.body);
+    // const team = await teamsService.create(req.user,req.body)
 
     return res.json(team);
   });
