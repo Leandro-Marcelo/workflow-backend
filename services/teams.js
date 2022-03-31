@@ -2,42 +2,55 @@ const TeamModel = require("../models/teams");
 
 class Teams {
   async create(idLeader, data) {
-    const newTeam = { ...data, idLeader, members: [idLeader] };
+    const newTeam = { ...data, idLeader, members: [{ _id: idLeader }] };
     const team = await TeamModel.create(newTeam);
 
     return team;
   }
-  // async create(leader,data){
-  //     const newTeam = {...data,leader:{
-  //         id:leader.id,
-  //         name:leader.name,
-  //         email:leader.email
-  //     },members:[
-  //         {
-  //             id:leader.id,
-  //             name:leader.name,
-  //             email:leader.email
-  //         }
-  //     ]}
-  //     const team = await TeamModel.create(newTeam)
-
-  //     return team
-  // }
-
+  /* Al momento mostrar idLeader, mongoose va a tomar el valor de ese idLeader y lo va almacenar en una propiedad llamada _id, pero no le esta creando un _id sino crea la propiedad y le pone el valor que ingresó el usuario (al momento de crear un team), esto lo hace porque va a utilizar ese _id para hacer las subconsultas en la colletion de users y así ponerle abajo las propiedades de name y email, todo esto porque estamos utilizando populate, ya que si vieramos idLeader en la base de datos sería idLeader:192938219321 y su id basicamente */
   async listByUser(idUser) {
-    /* Recordar que nuestro backend va a estar desplegado en google cloud y este va a interactuar con la Data Base de mongodb atlas, entonces una ventaja de utilizar populate es que desde el backend haría solamente una petición y ya la DB se encargaría de encontrar los team del idUser y de rellenear los datos de name email por cada miembro, etc etc pero solo haríamos una consulta a la base de datos, cosa que si lo hacemos manual serían muchas consultas de google cloud a mongodbatlas*/
-    const teams = await TeamModel.find({ members: idUser })
-      .populate("members", "name email")
+    const teams = await TeamModel.find({
+      members: { $elemMatch: { _id: idUser } },
+    })
+      /* como ahora en el objeto que van dentro del array son tipo así: members:[{_id:1312321,role:"normal"}], tendríamos que acceder al _id como si fuera un objeto de JS*/
+      .populate("members._id", "name email")
       .populate("idLeader", "name email");
 
     return teams;
   }
-  // async listByUser(id){
-  /* Va a iterar los teams y va a retornarme donde dentro de members hagan match con este id */
-  //     const teams = await TeamModel.find({members:{  $elemMatch:{id} }})
 
-  //     return teams
-  // }
+  async addMember(idTeam, idNewMember) {
+    const result = await TeamModel.updateOne(
+      /* primero específico el team donde quiero agregar el member */
+      { _id: idTeam },
+      /* luego decido la acción que en este caso es push (pull es para quitar), luego le digo la propiedad, y por último paso el objeto que tendrá como propiedad _id:idNewMember */
+      { $push: { members: { _id: idNewMember } } }
+    );
+    return result;
+  }
+
+  async changeRole(idTeam, idMember, newRole) {
+    const result = await TeamModel.updateOne(
+      /* le pasamos el id del team que queremos actualizar */
+      { _id: idTeam },
+      /* le decimos que queremos actualizar, va a iterar el array de members y va a filtrar donde el_.id:idMember (donde el valor de la propiedad _id sea igual a idMember) y a ese member va a ingresar a su propiedad role y se lo va a reasignar por este newRole */
+      { $set: { "members.$[el].role": newRole } },
+      { arrayFilters: [{ "el._id": idMember }] }
+    );
+    /* otra forma de verlo sería   { $set: { "members.$[el]": {role:newRole} } },*/
+    return result;
+  }
+  async deleteMember(idTeam, idMember) {
+    /* ojo, acá seguiría siendo updatedOne porque estamos retirando un elemento del arreglo y no eliminando el objeto entero de mongoose */
+    const result = await TeamModel.updateOne(
+      /* le pasamos el id del team que queremos actualizar */
+      { _id: idTeam },
+      /* existe pullAll por si queremos eliminar muchos miembros que coincidan */
+      /* luego le específico la acción, luego la propiedad, y por último le digo que me busque entre los objetos que estan en el array members, el _id que contenga este idMember */
+      { $pull: { members: { _id: idMember } } }
+    );
+    return result;
+  }
 }
 
 module.exports = Teams;
