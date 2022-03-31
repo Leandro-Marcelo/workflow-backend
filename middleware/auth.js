@@ -12,6 +12,7 @@ const {
 
 const handleToken = (token, req, res, next) => {
   try {
+    /* cuando decodifica los datos, esos datos son los que se usaron para crear el token */
     const decoded = jwt.verify(token, jwt_secret);
     req.user = decoded;
     return validateRole(req, res, next);
