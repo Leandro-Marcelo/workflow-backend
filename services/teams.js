@@ -1,11 +1,25 @@
 const TeamModel = require("../models/teams");
+const { uploadFile } = require("../libs/storage");
 
 class Teams {
-  async create(idLeader, data) {
-    const newTeam = { ...data, idLeader, members: [{ _id: idLeader }] };
-    const team = await TeamModel.create(newTeam);
+  async create(idLeader, data, file) {
+    const uploaded = await uploadFile(file.originalname, file.buffer);
 
-    return team;
+    console.log(uploaded);
+    if (uploaded.success) {
+      const newTeam = {
+        ...data,
+        /* algo bastante util es hacer el archivo publico, para que directamente ya podamos obtener la URL y directamente en el frontend no tengamos que configurar otra ruta para leer del archivo */
+        img: uploaded.fileName,
+        idLeader,
+        members: [{ _id: idLeader }],
+      };
+      const team = await TeamModel.create(newTeam);
+
+      return team;
+    }
+
+    return uploaded;
   }
   /* displays the members of the teams you belong to  */
   /* Al momento mostrar idLeader, mongoose va a tomar el valor de ese idLeader y lo va almacenar en una propiedad llamada _id, pero no le esta creando un _id sino crea la propiedad y le pone el valor que ingresó el usuario (al momento de crear un team), esto lo hace porque va a utilizar ese _id para hacer las subconsultas en la colletion de users y así ponerle abajo las propiedades de name y email, todo esto porque estamos utilizando populate, ya que si vieramos idLeader en la base de datos sería idLeader:192938219321 y su id basicamente */

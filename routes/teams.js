@@ -1,5 +1,4 @@
 const express = require("express");
-const { uploadFile } = require("../libs/storage");
 const { isRegular } = require("../middleware/auth");
 const upload = require("../middleware/upload");
 
@@ -21,11 +20,16 @@ function teams(app) {
     return res.json(team);
   });
 
-  router.post("/", isRegular, async (req, res) => {
-    const team = await teamsService.create(req.user.id, req.body);
+  /* OJO importante el orden de los middleware, primero verifico si es un usuario Regular y recién pasa al middleware de subir el archivo */
+  /* el single es para decirle que solamente vamos a recibir un único archivo, si nosotros lo vamos a enviar desde form-data como image, acá debe ir image, si queremos subir multiples archivos sería .array */
+  router.post("/", isRegular, upload.single("img"), async (req, res) => {
+    /* esto nos dice que tipo de archivo es req.file.mimetype() nos puede servir para validar que sea una imagen */
+    console.log(req.file);
+    const team = await teamsService.create(req.user.id, req.body, req.file);
 
     return res.json(team);
   });
+
   /* para hacer esto, acá ya deberiamos tener permisos, inclusive en este caso podríamos recibir un token tipo: /addMember/:token que ya contenga toda la información como, idUser, idLeader, idTeam, todo, de hecho, hacerlo como la otra vez añadir al correo el token y cuando se clickee el link se acepte la invitación, y que ya se añada al equipo  */
   /* acá lo tomo del body para hacerlo mas rápido */
   router.post("/addMember", async (req, res) => {
@@ -53,15 +57,6 @@ function teams(app) {
     );
 
     return res.json(team);
-  });
-
-  /* el single es para decirle que solamente vamos a recibir un único archivo, si nosotros lo vamos a enviar desde form-data como image, acá debe ir image, si queremos subir multiples archivos sería .array */
-  router.post("/uploadTest", upload.single("image"), (req, res) => {
-    const file = req.file;
-    /* originalname, es para respetar el nombre original del archivo,  */
-    uploadFile(file.originalname, req.file.buffer);
-
-    return res.json({ success: true });
   });
 }
 
