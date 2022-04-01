@@ -1,6 +1,7 @@
 const express = require("express");
 const { uploadFile } = require("../libs/storage");
 const { isRegular } = require("../middleware/auth");
+const upload = require("../middleware/upload");
 
 const Teams = require("../services/teams");
 
@@ -54,8 +55,11 @@ function teams(app) {
     return res.json(team);
   });
 
-  router.post("/uploadTest", (req, res) => {
-    uploadFile();
+  /* el single es para decirle que solamente vamos a recibir un único archivo, si nosotros lo vamos a enviar desde form-data como image, acá debe ir image, si queremos subir multiples archivos sería .array */
+  router.post("/uploadTest", upload.single("image"), (req, res) => {
+    const file = req.file;
+    /* originalname, es para respetar el nombre original del archivo,  */
+    uploadFile(file.originalname, req.file.buffer);
 
     return res.json({ success: true });
   });
