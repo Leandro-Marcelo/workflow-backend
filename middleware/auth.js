@@ -3,16 +3,19 @@ const {
   jwt_secret,
   //  facebook_app_id, facebook_app_secret, github_client_id, github_client_secret, twitter_consumer_id, twitter_consumer_secret
 } = require("../config");
-// const {oauth_client_id,callback_url,oauth_client_secret} = require("../config")
+const {
+  oauth_client_id,
+  callback_url,
+  oauth_client_secret,
+} = require("../config");
 
-// const GoogleStrategy = require('passport-google-oauth20').Strategy
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
 // const FacebookStrategy = require("passport-facebook").Strategy
 // const GitHubStrategy = require("passport-github2").Strategy
 // const TwitterStrategy = require("passport-twitter").Strategy
 
 const handleToken = (token, req, res, next) => {
   try {
-    /* cuando decodifica los datos, esos datos son los que se usaron para crear el token */
     const decoded = jwt.verify(token, jwt_secret);
     req.user = decoded;
     return validateRole(req, res, next);
@@ -68,16 +71,19 @@ const isEditor = (req, res, next) => {
   verifyToken(req, res, next);
 };
 
-// const useGoogleStrategy = ()=>{
-//     return new GoogleStrategy({
-//         clientID:oauth_client_id,
-//         clientSecret:oauth_client_secret,
-//         callbackURL:callback_url+"/auth/google/callback"
-//     },(accessToken,refreshToken,profile,done)=>{
-//         //console.log({accessToken,refreshToken,profile})
-//         done(null,{profile})
-//     })
-// }
+const useGoogleStrategy = () => {
+  return new GoogleStrategy(
+    {
+      clientID: oauth_client_id,
+      clientSecret: oauth_client_secret,
+      callbackURL: callback_url + "/auth/google/callback",
+    },
+    (accessToken, refreshToken, profile, done) => {
+      //console.log({accessToken,refreshToken,profile})
+      done(null, { profile });
+    }
+  );
+};
 
 // const useFacebookStrategy = () =>{
 //     return new FacebookStrategy({
@@ -114,7 +120,7 @@ module.exports = {
   isRegular,
   isAdmin,
   isEditor,
-  // useGoogleStrategy,
+  useGoogleStrategy,
   // useFacebookStrategy,
   // useGitHubStrategy,
   // useTwitterStrategy

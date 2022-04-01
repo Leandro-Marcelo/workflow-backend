@@ -7,8 +7,8 @@ function tokenToCookie(res, data) {
       .cookie("token", data.token, {
         httpOnly: true,
         sameSite: "none",
-        secure: true,
-        //secure:env!=="dev",
+        /*  secure: true, */
+        secure: env ? false : true,
         expires: date,
       })
       .json(data.data);

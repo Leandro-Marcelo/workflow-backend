@@ -1,4 +1,5 @@
 const express = require("express");
+const { uploadFile } = require("../libs/storage");
 const { isRegular } = require("../middleware/auth");
 
 const Teams = require("../services/teams");
@@ -12,6 +13,11 @@ function teams(app) {
   router.get("/", isRegular, async (req, res) => {
     const teams = await teamsService.listByUser(req.user.id);
     return res.json(teams);
+  });
+
+  router.get("/:id", isRegular, async (req, res) => {
+    const team = await teamsService.get(req.params.id);
+    return res.json(team);
   });
 
   router.post("/", isRegular, async (req, res) => {
@@ -39,13 +45,19 @@ function teams(app) {
     return res.json(team);
   });
 
-  router.post("/removeMember", async (req, res) => {
+  router.delete("/removeMember", async (req, res) => {
     const team = await teamsService.deleteMember(
       req.body.idTeam,
       req.body.idMember
     );
 
     return res.json(team);
+  });
+
+  router.post("/uploadTest", (req, res) => {
+    uploadFile();
+
+    return res.json({ success: true });
   });
 }
 

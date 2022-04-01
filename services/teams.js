@@ -7,6 +7,7 @@ class Teams {
 
     return team;
   }
+  /* displays the members of the teams you belong to  */
   /* Al momento mostrar idLeader, mongoose va a tomar el valor de ese idLeader y lo va almacenar en una propiedad llamada _id, pero no le esta creando un _id sino crea la propiedad y le pone el valor que ingresó el usuario (al momento de crear un team), esto lo hace porque va a utilizar ese _id para hacer las subconsultas en la colletion de users y así ponerle abajo las propiedades de name y email, todo esto porque estamos utilizando populate, ya que si vieramos idLeader en la base de datos sería idLeader:192938219321 y su id basicamente */
   async listByUser(idUser) {
     const teams = await TeamModel.find({
@@ -17,6 +18,15 @@ class Teams {
       .populate("idLeader", "name email");
 
     return teams;
+  }
+
+  /* Shows a specific team with their members */
+  async get(idTeam) {
+    const team = await TeamModel.find({ _id: idTeam })
+      .populate("members._id", "name email")
+      .populate("idLeader", "name email");
+    /* tomo el primer elemento del array porque me lo devuelve en array y ademas sé que solamente existe 1 por lo tanto, se va almacenar ahí */
+    return team[0];
   }
 
   async addMember(idTeam, idNewMember) {
