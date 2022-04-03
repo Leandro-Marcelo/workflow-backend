@@ -13,6 +13,11 @@ const storage = new Storage({
 /* multer es quien nos lo sube en un buffer */
 /* basicamente inicia con un writableStream para leer el archivo que viene en un buffer y pasarlo a Stream, luego va hacer un writableStream del stream que contiene la imagen/archivo hacía cloud storage (donde la referencia de la dirección es el file)  */
 const uploadFile = (fileName, buffer) => {
+    /* esta validación sirve si es que hacemos que la imagen sea necesaria, como elegí que no entonces esta al pedo */
+    if (!fileName || !buffer) {
+        return { success: false, message: "A file is necessary" };
+    }
+
     /* con esto obtengo la extension del archivo, ex, jpge/png/mp4 etc */
     const ext = path.extname(fileName);
     /* creamos un uuid.v4 y lo únimos con la ext y ese será el nombre del archivo que será subido a cloud storage */
@@ -50,17 +55,23 @@ const downloadFile = (fileName, res) => {
     const file = storage.bucket(bucket_name).file(fileName);
 
     /* crea un readableStream para leer el contenido del archivo (que ya esta en cloud storage me imagino) y de este readStream lo que quiero es hacer un writeStream pero ahora para el otro lado para la respuesta que nosotros tendríamos del frontend (quiere decir de enviarle  ese archjivo al frontend, ya sea mobil, web, desktop application)*/
-    const stream = file.createReadStream();
-
-    stream
-        /* aca no hace falta crear un writable stream porque la respuesta ya es un writestream esto lo sabemos porque cuando recibimos datos en formato json esta viene en formato stream y tenemos que parsearla con el middleware de express.json() */
-        .pipe(res)
-        .on("finish", () => {
+    const stream = file.createReadStream().on("error", (error) => {
+        if (error.code === 404) {
+            res.status(error.code).json({
+                error: true,
+                message: "No se encontró el archivo",
+            });
+        }
+    });
+    /* aca no hace falta crear un writable stream porque la respuesta ya es un writestream esto lo sabemos porque cuando recibimos datos en formato json esta viene en formato stream y tenemos que parsearla con el middleware de express.json() */
+    /* no hay que gestionar el error por asi decirlo porque acá es cuando ya se finaliza con la petición, donde podría causar el error si descarga un archivo que no existe es al momento de crearle un readable stream al archivo, por eso el evento de error lo pongo ahí y no acá */
+    stream.pipe(res);
+    /*   .on("finish", () => {
             console.log("Descargado exitosamente");
         })
-        .on("error", (err) => {
-            console.log(err);
-        });
+        .on("error", (error) => {
+            console.log(error);
+        }); */
 };
 
 module.exports = { uploadFile, downloadFile };

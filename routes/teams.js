@@ -1,7 +1,6 @@
 const express = require("express");
 const { isRegular } = require("../middleware/auth");
 const upload = require("../middleware/upload");
-const { downloadFile } = require("../libs/storage");
 const Teams = require("../services/teams");
 
 function teams(app) {
@@ -10,25 +9,22 @@ function teams(app) {
 
     const teamsService = new Teams();
 
-    router.get("/", isRegular, async (req, res) => {
-        const teams = await teamsService.listByUser(req.user.id);
-        return res.json(teams);
-    });
-
+    /* Shows a specific team with their members */
+    /* solo deberia traer las listas y tareas, los comentarios se cargarían despues al clickear seguramente */
     router.get("/:id", isRegular, async (req, res) => {
         const team = await teamsService.get(req.params.id);
         return res.json(team);
     });
 
-    /* el frontend haría esta petición para obtener la imagen */
-    router.get("/file/:fileName", (req, res) => {
-        const { fileName } = req.params;
-
-        downloadFile(fileName, res);
+    /* displays the members of the teams (also the Leader) you belong to  */
+    router.get("/", isRegular, async (req, res) => {
+        const teams = await teamsService.listByUser(req.user.id);
+        return res.json(teams);
     });
 
     /* OJO importante el orden de los middleware, primero verifico si es un usuario Regular y recién pasa al middleware de subir el archivo */
     /* el single es para decirle que solamente vamos a recibir un único archivo/imagen (y esto es por multer), si nosotros lo vamos a enviar desde form-data como image, acá debe ir image, si queremos subir multiples archivos sería .array */
+    /* esto se envia usando form-data y no un json, algo a saber es que por defecto form-data sería lo que enviaría un formulario , ya por defecto en el body se procesa, no necesitamos ningún middleware para parsearle como lo haciamos con json utilizando el middleware express.json() */
     router.post("/", isRegular, upload.single("img"), async (req, res) => {
         /* esto nos dice que tipo de archivo es req.file.mimetype() nos puede servir para validar que sea una imagen */
         /* el archivo/imagen se encuentra en req.file porque multer lo pone ahí */
@@ -57,6 +53,13 @@ function teams(app) {
         return res.json(team);
     });
 
+    /* Update a Team */
+    router.put("/:idTeam", async (req, res) => {
+        const team = await teamsService.update(req.params.idTeam, req.body);
+
+        return res.json(team);
+    });
+
     router.delete("/removeMember", async (req, res) => {
         const team = await teamsService.deleteMember(
             req.body.idTeam,
@@ -65,6 +68,30 @@ function teams(app) {
 
         return res.json(team);
     });
+
+    router.delete("/:idTeam", async (req, res) => {
+        const team = await teamsService.delete(req.params.idTeam);
+        return res.json(team);
+    });
+
+    /* ************** List Folder ****************** */
+    /* esto va en team porque necesitamos el id del team para agregar la lista y registrarla */
+    router.post("/:idTeam/addList", async (req, res) => {
+        const list = await teamsService.addList(req.params.idTeam, req.body);
+
+        return res.json(list);
+    });
+
+    /* pasamos también el idTeam porque al eliminar la lista, tendríamos que hacerle un pull quitando ese id de la lista que fue eliminada en el modelo de Team */
+    router.delete("/:idTeam/removeList/:idList", async (req, res) => {
+        const list = await teamsService.removeList(
+            req.params.idTeam,
+            req.params.idList
+        );
+
+        return res.json(list);
+    });
+    /* *********************************************** */
 }
 
 module.exports = teams;

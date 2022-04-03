@@ -1,28 +1,50 @@
 const TeamModel = require("../models/teams");
+/* si podemos importar otros servicios, lo que no podemos es importar el modelo de otro servicio */
+/* Esta bien importar un servicio a otro, porque hay servicios que dependen de otros lo que si no se puede hacer, es importar el Modelo del otro servicio, porque cada modelo debería tener su propio servicio que se encargue de la lógica de la aplicación, si cambia luego el modelo o algo así, ya el servicio se actualiza y así los otros servicios que dependian de este servicio ya no sufrirían ningun cambio  */
+const ListService = require("./lists");
 const { uploadFile } = require("../libs/storage");
 
 class Teams {
-    async create(idLeader, data, file) {
-        const uploaded = await uploadFile(file.originalname, file.buffer);
+    async update(id, data) {
+        const team = await TeamModel.findByIdAndUpdate(id, data, { new: true });
 
-        console.log(uploaded);
-        if (uploaded.success) {
+        return team;
+    }
+
+    async delete(id) {
+        const team = await TeamModel.findByIdAndDelete(id);
+
+        return team;
+    }
+
+    async create(idLeader, data, file) {
+        console.log(`file ori..:`, file?.originalname);
+        console.log(`file.buffer:`, file?.buffer);
+        let uploaded;
+        if (file) {
+            uploaded = await uploadFile(file?.originalname, file?.buffer);
+            /* al momento de subir el archivo, guardar eso mismo en el modelo de archivos para luego utilizarlo al momento de gestionar los permisos */
+        }
+        if (uploaded?.success) {
             const newTeam = {
                 ...data,
                 /* algo bastante util es hacer el archivo publico, para que directamente ya podamos obtener la URL y directamente en el frontend no tengamos que configurar otra ruta para leer del archivo */
                 /* es obligatorio pasar todo el path incluyendo la extensión del archivo porque es la key que utiliza cloud storage, ya que podría ver otro archivo que se llame igual y que tenga otra extensión como mp4 etc etc */
-                img: uploaded.fileName,
+                img: "/files/" + uploaded.fileName,
+                fileKey: uploaded.fileName,
                 idLeader,
                 members: [{ _id: idLeader }],
             };
             const team = await TeamModel.create(newTeam);
 
             return team;
+        } else {
+            const newTeam = { ...data, idLeader, members: [{ _id: idLeader }] };
+            const team = await TeamModel.create(newTeam);
+            return team;
         }
-
-        return uploaded;
     }
-    /* displays the members of the teams you belong to  */
+
     /* Al momento mostrar idLeader, mongoose va a tomar el valor de ese idLeader y lo va almacenar en una propiedad llamada _id, pero no le esta creando un _id sino crea la propiedad y le pone el valor que ingresó el usuario (al momento de crear un team), esto lo hace porque va a utilizar ese _id para hacer las subconsultas en la colletion de users y así ponerle abajo las propiedades de name y email, todo esto porque estamos utilizando populate, ya que si vieramos idLeader en la base de datos sería idLeader:192938219321 y su id basicamente */
     async listByUser(idUser) {
         const teams = await TeamModel.find({
@@ -35,11 +57,15 @@ class Teams {
         return teams;
     }
 
-    /* Shows a specific team with their members */
+    /* que significan los path */
     async get(idTeam) {
         const team = await TeamModel.find({ _id: idTeam })
             .populate("members._id", "name email")
-            .populate("idLeader", "name email");
+            .populate("idLeader", "name email")
+            .populate({
+                path: "lists",
+                populate: { path: "tasks", model: "tasks" },
+            });
         /* tomo el primer elemento del array porque me lo devuelve en array y ademas sé que solamente existe 1 por lo tanto, se va almacenar ahí */
         return team[0];
     }
@@ -65,6 +91,7 @@ class Teams {
         /* otra forma de verlo sería   { $set: { "members.$[el]": {role:newRole} } },*/
         return result;
     }
+
     async deleteMember(idTeam, idMember) {
         /* ojo, acá seguiría siendo updatedOne porque estamos retirando un elemento del arreglo y no eliminando el objeto entero de mongoose */
         const result = await TeamModel.updateOne(
@@ -75,6 +102,29 @@ class Teams {
             { $pull: { members: { _id: idMember } } }
         );
         return result;
+    }
+
+    async addList(idTeam, listData) {
+        /* para no tener que estar instanciando podemos hacerlo en el constructor */
+        const listService = new ListService();
+        const list = await listService.create(listData);
+        /* No agregamos validaciones para el resultado, si se modificó correctamente, se agrego y todo */
+        const result = await TeamModel.updateOne(
+            { _id: idTeam },
+            { $push: { lists: list.id } }
+        );
+        return list;
+    }
+
+    async removeList(idTeam, idList) {
+        /* para no tener que estar instanciando podemos hacerlo en el constructor */
+        const listService = new ListService();
+        const list = await listService.delete(idList);
+        const result = await TeamModel.updateOne(
+            { _id: idTeam },
+            { $pull: { lists: idList } }
+        );
+        return list;
     }
 }
 
