@@ -23,6 +23,7 @@ function tasks(app) {
     /* ******************************************************* */
 
     /* ************************* Comment Folder *********************** */
+    /* Add Comment */
     router.post(
         "/:idTask/addComment",
         isRegular,
@@ -38,6 +39,7 @@ function tasks(app) {
         }
     );
 
+    /* Delete Comment */
     router.delete(
         "/:idTask/removeComment/:idComment",
         isRegular,

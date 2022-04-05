@@ -9,6 +9,7 @@ const listSchema = new Schema({
         ref: "teams",
     },
     name: String,
+    /* para que sirve la descripción de la lista si en trello solo muestra el título de la lista xddd */
     description: String,
     tasks: [
         {

@@ -1,44 +1,64 @@
-const TaskModel = require("../models/tasks")
-const CommentService = require("./comments")
+const TaskModel = require("../models/tasks");
+const ListService = require("./lists");
+const CommentService = require("./comments");
 
-class Tasks{
+class Tasks {
+    constructor() {
+        /* define esto así para que no tener que poner users = new Users() y luego utilizar el método users.getByEmail, pero esto tendría que ponerlo tanto en login como en signup (basicamente para no repetir código) ====>  this.users = new Users(); ... Lo malo de esto es que si tengo importado el servicio de task en el servicio de lists, no puedo importar el servicio de lists en task */
+        /* this.comments = new CommentService(); */
+    }
+    /* podríamos agregar un populate para traer los datos de quien comentó, al menos de definir otra ruta y que los comentarios esten ocultos que al momento de clickear, haga un consumi de la api y pida recien los comentarios */
+    async get(id) {
+        const result = await TaskModel.findById(id)
+            .populate("comments")
+            .populate("assigned", "name email");
 
-    async get(id){
-        const result = await TaskModel.findById(id).populate("comments").populate("assigned","name email")
-
-        return result
+        return result;
     }
 
-    async create(data){
-        const result = await TaskModel.create(data)
-
-        return result
+    async create(data) {
+        /* validacion si existe la lista, ya que sino puede crear tareas a una lista que no existe, validar tambien la url? */
+        /* podríamos validar de que la tarea tenga titulo, una descripcion etc etc */
+        /* un error podria no asignarle la tarea a nadie xd */
+        const taskCreated = await TaskModel.create(data);
+        return taskCreated;
     }
-    async update(id,data){
-        const result = await TaskModel.findByIdAndUpdate(id,data)
+    async update(id, data) {
+        const result = await TaskModel.findByIdAndUpdate(id, data);
 
-        return result
-    }
-
-    async delete(id){
-        const result = await TaskModel.findByIdAndDelete(id)
-
-        return result
+        return result;
     }
 
-    async addComment(idTask,idUser,commentData,file){
-        const commentService = new CommentService()
-        const comment = await commentService.create(idUser,commentData,file)
-        const result = await TaskModel.updateOne({_id:idTask},{$push:{comments:comment.id}},{new:true})
-        return comment
+    async delete(id) {
+        const taskDeleted = await TaskModel.findByIdAndDelete(id);
+        if (taskDeleted) {
+            return { success: true, taskDeleted };
+        }
+        return { success: false, message: "Task does not exist" };
     }
-    async removeComment(idTask,idComment){
-        const commentService = new CommentService()
-        const comment = await commentService.delete(idComment)
-        const result = await TaskModel.updateOne({_id:idTask},{$pull:{comments:idComment}},{new:true})
-        return comment
+
+    /* los que comentan deben pertenecer al team y deben ser editor, validator o leader, no otros con rol normal a pesar de que no puedan ver otras lista, igual en caso de querer no debería dejarles el backend */
+    /* el idUser lo pasa separado del commentData porque este lo obtiene del token del usuario cuando esta logeado, es decir, (cuando uno crea un comentario no pone su id en la base de datos porque no lo sabe xd) */
+    async addComment(idTask, idUser, commentData, file) {
+        const commentService = new CommentService();
+        const comment = await commentService.create(idUser, commentData, file);
+        const result = await TaskModel.updateOne(
+            { _id: idTask },
+            { $push: { comments: comment.id } },
+            { new: true }
+        );
+        return comment;
+    }
+    async removeComment(idTask, idComment) {
+        const commentService = new CommentService();
+        const comment = await commentService.delete(idComment);
+        const result = await TaskModel.updateOne(
+            { _id: idTask },
+            { $pull: { comments: idComment } },
+            { new: true }
+        );
+        return comment;
     }
 }
 
-
-module.exports = Tasks
+module.exports = Tasks;

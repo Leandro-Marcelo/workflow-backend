@@ -10,6 +10,7 @@ const files = require("./routes/files");
 const lists = require("./routes/lists");
 const tasks = require("./routes/tasks");
 const users = require("./routes/users");
+const comments = require("./routes/comments");
 
 /* si hacemos una query y no hemos registrado ninguna lista pero queremos probarla, podemos ponerla en index y así por lo menos nos devuelve un array vacio en el campo lists 
 const ListModel = require("../models/lists"); */
@@ -20,7 +21,7 @@ app.use(express.json());
 app.use(
     cors({
         credentials: true,
-        origin: ["http://locahost:3000"],
+        origin: ["http://localhost:3000", "http://localhost:3001"],
     })
 );
 app.use(cookies());
@@ -35,6 +36,7 @@ files(app);
 lists(app);
 tasks(app);
 users(app);
+comments(app);
 
 app.get("/", (req, res) => {
     return res.json({ hello: "world" });

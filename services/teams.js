@@ -1,6 +1,7 @@
 const TeamModel = require("../models/teams");
 /* si podemos importar otros servicios, lo que no podemos es importar el modelo de otro servicio */
 /* Esta bien importar un servicio a otro, porque hay servicios que dependen de otros lo que si no se puede hacer, es importar el Modelo del otro servicio, porque cada modelo debería tener su propio servicio que se encargue de la lógica de la aplicación, si cambia luego el modelo o algo así, ya el servicio se actualiza y así los otros servicios que dependian de este servicio ya no sufrirían ningun cambio  */
+/* tambien por el tema de validaciones, si yo hago validaciones al momento de crear una tarea, los demas servicios que la consuman no tendrían que repetir código es decir, si importaran el modelo las mismas validaciones que hice en el servicio mismo tendrían que ponerlo donde lo fueran a utilizar y eso no es práctico. Hago todas las validaciones del servicio con su modelo así las demas no tienen que hacerlo y solo consumir */
 const ListService = require("./lists");
 const { uploadFile } = require("../libs/storage");
 
@@ -18,8 +19,8 @@ class Teams {
     }
 
     async create(idLeader, data, file) {
-        console.log(`file ori..:`, file?.originalname);
-        console.log(`file.buffer:`, file?.buffer);
+        /* console.log(`file ori..:`, file?.originalname);
+        console.log(`file.buffer:`, file?.buffer); */
         let uploaded;
         if (file) {
             uploaded = await uploadFile(file?.originalname, file?.buffer);
@@ -57,7 +58,7 @@ class Teams {
         return teams;
     }
 
-    /* que significan los path */
+    /* Show the members, Leader, lists,  */
     async get(idTeam) {
         const team = await TeamModel.find({ _id: idTeam })
             .populate("members._id", "name email")

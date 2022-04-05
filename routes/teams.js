@@ -76,6 +76,7 @@ function teams(app) {
 
     /* ************** List Folder ****************** */
     /* esto va en team porque necesitamos el id del team para agregar la lista y registrarla */
+    /* leandro puede crearle una lista a un team al cual no pertenece, agregar validación, lo correcto sería que solamente los que son editores o leader en el equipo pueden crear listas pero dentro de ese team al cual pertenecen */
     router.post("/:idTeam/addList", async (req, res) => {
         const list = await teamsService.addList(req.params.idTeam, req.body);
 

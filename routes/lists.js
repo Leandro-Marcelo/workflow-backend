@@ -11,6 +11,14 @@ function lists(app) {
     app.use("/lists", router);
 
     /* ************** List Folder ************* */
+
+    /* Get a list */
+    router.get("/:idList", isRegular, async (req, res) => {
+        console.log(req.params.idList);
+        const list = await listService.get(req.params.idList);
+        return res.json(list);
+    });
+
     /* Updating a list */
     router.put("/:idList", isRegular, async (req, res) => {
         const list = await listService.update(req.params.idList, req.body);
