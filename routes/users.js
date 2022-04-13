@@ -14,6 +14,12 @@ const users = (app) => {
         return res.json(users);
     });
 
+    router.get("/:idUser", async (req, res) => {
+        const user = await userService.get(req.params.idUser);
+
+        return res.json(user);
+    });
+
     router.put("/:idUser", isRegular, async (req, res) => {
         const user = await userService.update(req.params.idUser, req.body);
         return res.json(user);

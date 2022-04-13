@@ -35,18 +35,15 @@ function lists(app) {
     });
 
     /* Remove a task */
-    router.delete(
-        "/:idList/removeTask/:idTask",
-        isRegular,
-        async (req, res) => {
-            const task = await listService.removeTask(
-                req.params.idList,
-                req.params.idTask
-            );
+    /* le quite el  isRegular, */
+    router.delete("/:idList/removeTask/:idTask", async (req, res) => {
+        const task = await listService.removeTask(
+            req.params.idList,
+            req.params.idTask
+        );
 
-            return res.json(task);
-        }
-    );
+        return res.json(task);
+    });
 
     /* ************************************* */
 }

@@ -1,6 +1,7 @@
 const { env } = require("../config");
 
 function tokenToCookie(res, data) {
+    console.log(data);
     if (data.success) {
         let date = new Date(new Date().setDate(new Date().getDate() + 7));
         return res
@@ -11,11 +12,11 @@ function tokenToCookie(res, data) {
                 /*   */
                 expires: date,
             })
-            .json(data.data);
+            .json({ success: data.success, user: data.data });
         /* .redirect("http://localhost:3000") */
     }
 
-    return res.json(data);
+    return res.status(401).json(data);
 }
 
 module.exports = tokenToCookie;

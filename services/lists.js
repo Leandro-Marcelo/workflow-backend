@@ -8,7 +8,7 @@ class Lists {
     async get(idList) {
         try {
             /* returns null if it does not match anyone */
-            const list = await ListModel.findById(idList);
+            const list = await ListModel.findById(idList).populate("tasks");
             if (list) {
                 return { success: true, list };
             }
@@ -28,8 +28,9 @@ class Lists {
         const result = await ListModel.findByIdAndUpdate(id, data, {
             new: true,
         });
+        const response = await this.get(id);
 
-        return result;
+        return response;
     }
 
     async delete(id) {

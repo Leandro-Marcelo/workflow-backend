@@ -2,6 +2,7 @@ const Users = require("./users");
 const jwt = require("jsonwebtoken");
 const { jwt_secret } = require("../config");
 const bcrypt = require("bcrypt");
+const { uploadFile } = require("../libs/storage");
 // const sendEmail = require("../libs/email")
 
 class Auth {
@@ -20,6 +21,7 @@ class Auth {
             id: user.id,
             name: user.name,
             email: user.email,
+            img: user.img,
             role: user.role ? user.role : 0,
         };
         const token = jwt.sign(data, jwt_secret, { expiresIn: "7d" });
@@ -31,6 +33,7 @@ class Auth {
             return { success: false, message: "Ingresa credenciales" };
         }
         const user = await this.users.getByEmail(email);
+
         if (user) {
             const correctPassword = await bcrypt.compare(
                 password,
@@ -38,13 +41,22 @@ class Auth {
             );
             if (correctPassword) {
                 return this.getToken(user);
+            } else {
+                return {
+                    success: false,
+                    message: "Las credenciales no coinciden",
+                };
             }
         }
 
-        return { success: false, message: "Las credenciales no coinciden" };
+        return {
+            success: false,
+            message: "El email no se encuentra registrado.",
+        };
     }
 
-    async signup(userData) {
+    /* signup con json    
+ async signup(userData) {
         if (await this.users.getByEmail(userData.email)) {
             return { succes: false, message: "Usuario ya registrado" };
         } else {
@@ -52,6 +64,32 @@ class Auth {
             userData.password = await this.hashPassword(userData.password);
             const user = await this.users.create(userData);
             // await sendEmail(userData.email,"Registro exitoso","Bienvenido a la aplicación","<a href='http://localhost:4000'><em>Bienvenido</em> a la aplicación</a>")
+            return this.getToken(user);
+        }
+    } */
+
+    async signup(credentials, file) {
+        /* console.log(credentials, file); */
+        if (await this.users.getByEmail(credentials.email)) {
+            return { succes: false, message: "Usuario ya registrado" };
+        }
+        credentials.password = await this.hashPassword(credentials.password);
+        let uploaded;
+        if (file) {
+            uploaded = await uploadFile(file?.originalname, file?.buffer);
+        }
+        if (uploaded?.success) {
+            const newUser = {
+                ...credentials,
+                img: "/files/" + uploaded.fileName,
+                fileKey: uploaded.fileName,
+            };
+            const user = await this.users.create(newUser);
+
+            return this.getToken(user);
+        } else {
+            const newUser = { ...credentials };
+            const user = await this.users.create(newUser);
             return this.getToken(user);
         }
     }

@@ -6,6 +6,7 @@ const passport = require("passport");
 const Auth = require("../services/auth");
 const tokenToCookie = require("../helpers/tokenToCookie");
 const { env } = require("../config");
+const upload = require("../middleware/upload");
 
 function auth(app) {
     const router = express.Router();
@@ -29,10 +30,18 @@ function auth(app) {
 
         return tokenToCookie(res, response);
     });
-
+    /* Sign up con JSON
     router.post("/signup", async (req, res) => {
         const user = req.body;
         const response = await authService.signup(user);
+        return tokenToCookie(res, response);
+    }); */
+
+    router.post("/signup", upload.single("img"), async (req, res) => {
+        /* console.log(req.body);
+        console.log(req.file); */
+        const response = await authService.signup(req.body, req.file);
+
         return tokenToCookie(res, response);
     });
 
@@ -41,14 +50,14 @@ function auth(app) {
             .cookie("token", "", {
                 httpOnly: true,
                 sameSite: "none",
-                secure: env ? false : true,
-                /* secure: true, */
+                /* secure: env ? false : true, */
+                secure: true,
                 expires: new Date(),
             })
-            .json({ loggedOut: true });
+            .json({ success: true });
     });
     router.post("/validate", isRegular, (req, res) => {
-        return res.json({ logged: true, user: req.user });
+        return res.json({ success: true, user: req.user });
     });
 
     router.get(

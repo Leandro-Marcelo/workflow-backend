@@ -19,6 +19,12 @@ class Teams {
     }
 
     async create(idLeader, data, file) {
+        if (data.name === "") {
+            return {
+                success: false,
+                message: "El nombre del equipo es requerido",
+            };
+        }
         /* console.log(`file ori..:`, file?.originalname);
         console.log(`file.buffer:`, file?.buffer); */
         let uploaded;
@@ -38,15 +44,17 @@ class Teams {
             };
             const team = await TeamModel.create(newTeam);
 
-            return team;
+            return { success: true, team };
         } else {
             const newTeam = { ...data, idLeader, members: [{ _id: idLeader }] };
             const team = await TeamModel.create(newTeam);
-            return team;
+            return { success: true, team };
         }
     }
 
     /* Al momento mostrar idLeader, mongoose va a tomar el valor de ese idLeader y lo va almacenar en una propiedad llamada _id, pero no le esta creando un _id sino crea la propiedad y le pone el valor que ingresó el usuario (al momento de crear un team), esto lo hace porque va a utilizar ese _id para hacer las subconsultas en la colletion de users y así ponerle abajo las propiedades de name y email, todo esto porque estamos utilizando populate, ya que si vieramos idLeader en la base de datos sería idLeader:192938219321 y su id basicamente */
+
+    /* Si bien trae los teams, no de un project en específico sino todos los teams a los que pertenece */
     async listByUser(idUser) {
         const teams = await TeamModel.find({
             members: { $elemMatch: { _id: idUser } },
@@ -58,10 +66,12 @@ class Teams {
         return teams;
     }
 
+    /* esto de arriba estaba  */
+
     /* Show the members, Leader, lists,  */
     async get(idTeam) {
         const team = await TeamModel.find({ _id: idTeam })
-            .populate("members._id", "name email")
+            .populate("members._id", "name email img")
             .populate("idLeader", "name email")
             .populate({
                 path: "lists",

@@ -29,8 +29,10 @@ function teams(app) {
         /* esto nos dice que tipo de archivo es req.file.mimetype() nos puede servir para validar que sea una imagen */
         /* el archivo/imagen se encuentra en req.file porque multer lo pone ahí */
         const team = await teamsService.create(req.user.id, req.body, req.file);
-
-        return res.json(team);
+        if (team.success) {
+            return res.status(200).json(team);
+        }
+        return res.status(401).json(team);
     });
 
     /* para hacer esto, acá ya deberiamos tener permisos, inclusive en este caso podríamos recibir un token tipo: /addMember/:token que ya contenga toda la información como, idUser, idLeader, idTeam, todo, de hecho, hacerlo como la otra vez añadir al correo el token y cuando se clickee el link se acepte la invitación, y que ya se añada al equipo  */

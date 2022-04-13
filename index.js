@@ -21,9 +21,10 @@ app.use(express.json());
 app.use(
     cors({
         credentials: true,
-        origin: ["http://localhost:3000", "http://localhost:3001"],
+        origin: ["http://localhost:3000", "http://localhost:3002"],
     })
 );
+
 app.use(cookies());
 
 const { connection } = require("./config/db");
