@@ -24,7 +24,7 @@ class Auth {
             img: user.img,
             role: user.role ? user.role : 0,
         };
-        const token = jwt.sign(data, jwt_secret, { expiresIn: "7d" });
+        const token = jwt.sign(data, jwt_secret, { expiresIn: "1d" });
         return { success: true, data, token };
     }
 
@@ -69,9 +69,28 @@ class Auth {
     } */
 
     async signup(credentials, file) {
-        /* console.log(credentials, file); */
+        if (!credentials.email || !credentials.password || !credentials.name) {
+            return { success: false, message: "Ingresa credenciales" };
+        }
+
         if (await this.users.getByEmail(credentials.email)) {
-            return { succes: false, message: "Usuario ya registrado" };
+            return {
+                succes: false,
+                message: "Usuario ya registrado con ese email",
+            };
+        }
+        if (await this.users.getByFilter({ name: credentials.name })) {
+            return {
+                succes: false,
+                message: "Usuario ya registrado con ese nombre",
+            };
+        }
+
+        if (credentials.name.length > 12) {
+            return {
+                success: false,
+                message: "El nombre no puede sobrepasar los 12 caracteres",
+            };
         }
         credentials.password = await this.hashPassword(credentials.password);
         let uploaded;

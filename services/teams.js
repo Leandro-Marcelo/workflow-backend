@@ -25,8 +25,7 @@ class Teams {
                 message: "El nombre del equipo es requerido",
             };
         }
-        /* console.log(`file ori..:`, file?.originalname);
-        console.log(`file.buffer:`, file?.buffer); */
+
         let uploaded;
         if (file) {
             uploaded = await uploadFile(file?.originalname, file?.buffer);

@@ -64,8 +64,6 @@ class Lists {
         const taskService = new TaskService();
         const result = await taskService.delete(idTask);
         if (result.success) {
-            console.log(`entra acá`);
-            console.log(idTask);
             const listUpdated = await ListModel.updateOne(
                 { _id: idList },
                 { $pull: { tasks: idTask } }

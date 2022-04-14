@@ -38,8 +38,6 @@ function auth(app) {
     }); */
 
     router.post("/signup", upload.single("img"), async (req, res) => {
-        /* console.log(req.body);
-        console.log(req.file); */
         const response = await authService.signup(req.body, req.file);
 
         return tokenToCookie(res, response);
@@ -70,7 +68,6 @@ function auth(app) {
         "/google/callback",
         passport.authenticate("google"),
         async (req, res) => {
-            console.log(req.user.profile);
             /* .photos[0].value BOEEE */
             const response = await authService.loginProvider(req.user.profile);
             return tokenToCookie(res, response);

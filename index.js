@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const cookies = require("cookie-parser");
-const { port, env } = require("./config");
+const config = require("./config");
 
 //Importando routers
 const auth = require("./routes/auth");
@@ -21,7 +21,11 @@ app.use(express.json());
 app.use(
     cors({
         credentials: true,
-        origin: ["http://localhost:3000", "http://localhost:3002"],
+        origin: [
+            "http://localhost:3000",
+            "http://localhost:3002",
+            "https://leandro-marcelo.github.io",
+        ],
     })
 );
 
@@ -40,10 +44,13 @@ users(app);
 comments(app);
 
 app.get("/", (req, res) => {
-    return res.json({ hello: "world" });
+    return res.json({
+        message:
+            "Hola, Soy Leandro Marcelo y este es mi API REST de mi Workflow App",
+    });
 });
 
-app.listen(port, () => {
-    console.log("Modo:", env);
-    console.log("listening on: http://localhost:" + port);
+app.listen(config.port, () => {
+    /*    console.log("Modo:", env);
+    console.log("listening on: http://localhost:" + port); */
 });

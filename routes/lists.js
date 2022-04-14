@@ -14,7 +14,6 @@ function lists(app) {
 
     /* Get a list */
     router.get("/:idList", isRegular, async (req, res) => {
-        console.log(req.params.idList);
         const list = await listService.get(req.params.idList);
         return res.json(list);
     });
