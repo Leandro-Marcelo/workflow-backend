@@ -20,12 +20,12 @@ const app = express();
 app.use(express.json());
 app.use(
     cors({
-        credentials: true,
         origin: [
             "http://localhost:3000",
-            "http://localhost:3002",
+            "http://localhost:3001",
             "https://leandro-marcelo.github.io",
         ],
+        credentials: true,
     })
 );
 
@@ -44,10 +44,9 @@ users(app);
 comments(app);
 
 app.get("/", (req, res) => {
-    return res.json({
-        message:
-            "Hola, Soy Leandro Marcelo y este es mi API REST de mi Workflow App",
-    });
+    res.status(200).send(
+        "Hola, Soy Leandro Marcelo y este es mi API REST de mi Workflow App"
+    );
 });
 
 app.listen(config.port, () => {

@@ -10,8 +10,13 @@ class Tasks {
     /* podríamos agregar un populate para traer los datos de quien comentó, al menos de definir otra ruta y que los comentarios esten ocultos que al momento de clickear, haga un consumi de la api y pida recien los comentarios */
     async get(id) {
         const result = await TaskModel.findById(id)
-            .populate("comments")
+            .populate({
+                path: "comments",
+                populate: { path: "idUser", model: "users" },
+            })
             .populate("assigned", "name email");
+        /* usuarios a los cuales puede asignar tareas */
+        /*  const filteredUsers = await Tas; */
 
         return result;
     }
@@ -24,7 +29,9 @@ class Tasks {
         return taskCreated;
     }
     async update(id, data) {
-        const result = await TaskModel.findByIdAndUpdate(id, data);
+        const result = await TaskModel.findByIdAndUpdate(id, data, {
+            new: true,
+        });
 
         return result;
     }
@@ -39,15 +46,20 @@ class Tasks {
 
     /* los que comentan deben pertenecer al team y deben ser editor, validator o leader, no otros con rol normal a pesar de que no puedan ver otras lista, igual en caso de querer no debería dejarles el backend */
     /* el idUser lo pasa separado del commentData porque este lo obtiene del token del usuario cuando esta logeado, es decir, (cuando uno crea un comentario no pone su id en la base de datos porque no lo sabe xd) */
-    async addComment(idTask, idUser, commentData, file) {
+    async addComment(idTask, user, commentData, file) {
         const commentService = new CommentService();
-        const comment = await commentService.create(idUser, commentData, file);
+        const comment = await commentService.create(
+            idTask,
+            user.id,
+            commentData,
+            file
+        );
         const result = await TaskModel.updateOne(
             { _id: idTask },
             { $push: { comments: comment.id } },
             { new: true }
         );
-        return comment;
+        return { comment, user };
     }
     async removeComment(idTask, idComment) {
         const commentService = new CommentService();

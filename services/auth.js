@@ -33,7 +33,6 @@ class Auth {
             return { success: false, message: "Ingresa credenciales" };
         }
         const user = await this.users.getByEmail(email);
-
         if (user) {
             const correctPassword = await bcrypt.compare(
                 password,
@@ -102,12 +101,13 @@ class Auth {
                 ...credentials,
                 img: "/files/" + uploaded.fileName,
                 fileKey: uploaded.fileName,
+                role: 10,
             };
             const user = await this.users.create(newUser);
 
             return this.getToken(user);
         } else {
-            const newUser = { ...credentials };
+            const newUser = { ...credentials, role: 10 };
             const user = await this.users.create(newUser);
             return this.getToken(user);
         }
@@ -119,7 +119,7 @@ class Auth {
             user = await this.users.create({
                 name: profile.displayName,
                 email: profile.emails ? profile.emails[0].value : undefined,
-                role: 0,
+                role: 10,
                 provider: profile.provider,
                 idProvider: profile.id,
             });

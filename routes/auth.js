@@ -27,6 +27,7 @@ function auth(app) {
     router.post("/login", async (req, res) => {
         const { email, password } = req.body;
         const response = await authService.login(email, password);
+        /* console.log(response); */
 
         return tokenToCookie(res, response);
     });

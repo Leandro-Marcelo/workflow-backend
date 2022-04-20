@@ -12,13 +12,14 @@ function teams(app) {
     /* Shows a specific team with their members */
     /* solo deberia traer las listas y tareas, los comentarios se cargarían despues al clickear seguramente */
     router.get("/:id", isRegular, async (req, res) => {
-        const team = await teamsService.get(req.params.id);
+        console.log(req.user.id);
+        const team = await teamsService.getTeam(req.params.id, req.user.id);
         return res.json(team);
     });
 
     /* displays the members of the teams (also the Leader) you belong to  */
     router.get("/", isRegular, async (req, res) => {
-        const teams = await teamsService.listByUser(req.user.id);
+        const teams = await teamsService.getTeams(req.user.id);
         return res.json(teams);
     });
 
@@ -62,13 +63,12 @@ function teams(app) {
         return res.json(team);
     });
 
-    router.delete("/removeMember", async (req, res) => {
-        const team = await teamsService.deleteMember(
-            req.body.idTeam,
-            req.body.idMember
-        );
+    router.delete("/:idTeam/removeMember/:idMember", async (req, res) => {
+        const { idTeam, idMember } = req.params;
+        const team = await teamsService.deleteMember(idTeam, idMember);
 
-        return res.json(team);
+        /*  return res.json(team); */
+        return res.json({ team });
     });
 
     router.delete("/:idTeam", async (req, res) => {
@@ -94,7 +94,20 @@ function teams(app) {
 
         return res.json(list);
     });
-    /* *********************************************** */
+
+    /* ********************* filteredUsers ************************ */
+    /* traer los usuarios que puedo añadir al team */
+    router.post("/filteredUsers", isRegular, async (req, res) => {
+        const filteredUsers = await teamsService.getFilteredUsers(req.body);
+        return res.json(filteredUsers);
+    });
+
+    /* displays the members of the teams (also the Leader) you belong to  */
+    router.get("/:idTeam/role/:role", isRegular, async (req, res) => {
+        const { idTeam, role } = req.params;
+        const teams = await teamsService.viewMembersByRole(idTeam, role);
+        return res.json(teams);
+    });
 }
 
 module.exports = teams;

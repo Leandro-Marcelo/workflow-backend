@@ -59,16 +59,24 @@ const useGoogleStrategy = () => {
 // }
 
 // 1
-const isRegular = (req, res, next) => {
-    req.neededRole = 0;
-    verifyToken(req, res, next);
-};
+
 const isAdmin = (req, res, next) => {
-    req.neededRole = 2;
+    req.neededRole = 30;
     verifyToken(req, res, next);
 };
+
 const isEditor = (req, res, next) => {
-    req.neededRole = 1;
+    req.neededRole = 20;
+    verifyToken(req, res, next);
+};
+
+const isRegular = (req, res, next) => {
+    req.neededRole = 10;
+    verifyToken(req, res, next);
+};
+
+const isNew = (req, res, next) => {
+    req.neededRole = 0;
     verifyToken(req, res, next);
 };
 

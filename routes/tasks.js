@@ -11,7 +11,7 @@ function tasks(app) {
     app.use("/tasks", router);
     /* *********************** Task Folder *********************** */
     router.get("/:idTask", isRegular, async (req, res) => {
-        const task = await taskService.get(req.params.idTask);
+        const task = await taskService.get(req.params.idTask, req.user);
 
         return res.json(task);
     });
@@ -29,9 +29,10 @@ function tasks(app) {
         isRegular,
         upload.single("file"),
         async (req, res) => {
+            console.log(req.user);
             const result = await taskService.addComment(
                 req.params.idTask,
-                req.user.id,
+                req.user,
                 req.body,
                 req.file
             );
@@ -40,18 +41,15 @@ function tasks(app) {
     );
 
     /* Delete Comment */
-    router.delete(
-        "/:idTask/removeComment/:idComment",
-        isRegular,
-        async (req, res) => {
-            const comment = await taskService.removeComment(
-                req.params.idTask,
-                req.params.idComment
-            );
+    /* le quite el isRegular isRegular, */
+    router.delete("/:idTask/removeComment/:idComment", async (req, res) => {
+        const comment = await taskService.removeComment(
+            req.params.idTask,
+            req.params.idComment
+        );
 
-            return res.json(comment);
-        }
-    );
+        return res.json(comment);
+    });
 
     /* *********************************************************** */
 }

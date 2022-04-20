@@ -11,9 +11,16 @@ const commentSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "users",
     },
-    content: String,
-    fileKey: String,
     file: String,
+    fileKey: String,
+    content: String,
+    fileName: String,
+    created_date: {
+        type: Date,
+        default: new Date(),
+        /* para que sirve el immutable */
+        immutable: true,
+    },
 });
 
 const CommentModel = mongoose.model("comments", commentSchema);

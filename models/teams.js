@@ -10,7 +10,7 @@ const teamSchema = new Schema({
     },
     /* tendríamos que hacer el nombre del equipo único no? Creo que no porque en nuestro discord por ejemplo, somos el team cmamut y en otro país puede que haya un equipo igual xd, pero no porque nosotros nos llamamos así ellos no pueden xd */
     name: String,
-    /* este sería el nombre del archivo como esta en google cloud  */
+    /* este sería el nombre del archivo como esta en cloud storage  */
     fileKey: String,
     /* y este ya es la ruta para descargar el archivo  */
     img: String,
