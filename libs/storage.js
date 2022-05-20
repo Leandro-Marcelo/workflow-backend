@@ -75,5 +75,3 @@ const downloadFile = (fileName, res) => {
 };
 
 module.exports = { uploadFile, downloadFile };
-
-// Streams: Manuel Alexander

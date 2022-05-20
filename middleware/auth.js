@@ -4,12 +4,17 @@ const {
     callback_url,
     oauth_client_id,
     oauth_client_secret,
-    //  facebook_app_id, facebook_app_secret, github_client_id, github_client_secret, twitter_consumer_id, twitter_consumer_secret
+    github_client_id,
+    github_client_secret,
+    /* facebook_app_id,
+    facebook_app_secret,
+    twitter_consumer_id,
+    twitter_consumer_secret, */
 } = require("../config");
 
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const GitHubStrategy = require("passport-github2").Strategy;
 // const FacebookStrategy = require("passport-facebook").Strategy
-// const GitHubStrategy = require("passport-github2").Strategy
 // const TwitterStrategy = require("passport-twitter").Strategy
 /* podríamos agregar login con spotify como lo hizo agustin */
 
@@ -27,36 +32,47 @@ const useGoogleStrategy = () => {
     );
 };
 
-// const useFacebookStrategy = () =>{
-//     return new FacebookStrategy({
-//         clientID:facebook_app_id,
-//         clientSecret:facebook_app_secret,
-//         callbackURL:callback_url+"/auth/facebook/callback"
-//     },(accessToken,refreshToken,profile,done)=>{
-//         //console.log({accessToken,refreshToken,profile})
-//         done(null,{profile})
-//     })
-// }
-// const useGitHubStrategy = () =>{
-//     return new GitHubStrategy({
-//         clientID:github_client_id,
-//         clientSecret:github_client_secret,
-//         callbackURL:callback_url+"/auth/github/callback"
-//     },(accessToken,refreshToken,profile,done)=>{
-//         //console.log({accessToken,refreshToken,profile})
-//         done(null,{profile})
-//     })
-// }
-// const useTwitterStrategy = () =>{
-//     return new TwitterStrategy({
-//         consumerKey:twitter_consumer_id,
-//         consumerSecret:twitter_consumer_secret,
-//         callbackURL:callback_url+"/auth/twitter/callback"
-//     },(accessToken,refreshToken,profile,done)=>{
-//         //console.log({accessToken,refreshToken,profile})
-//         done(null,{profile})
-//     })
-// }
+/* const useFacebookStrategy = () => {
+    return new FacebookStrategy(
+        {
+            clientID: facebook_app_id,
+            clientSecret: facebook_app_secret,
+            callbackURL: callback_url + "/auth/facebook/callback",
+        },
+        (accessToken, refreshToken, profile, done) => {
+            //console.log({accessToken,refreshToken,profile})
+            done(null, { profile });
+        }
+    );
+}; */
+
+const useGitHubStrategy = () => {
+    return new GitHubStrategy(
+        {
+            clientID: github_client_id,
+            clientSecret: github_client_secret,
+            callbackURL: callback_url + "/auth/github/callback",
+        },
+        (accessToken, refreshToken, profile, done) => {
+            //console.log({accessToken,refreshToken,profile})
+            done(null, { profile });
+        }
+    );
+};
+
+/* const useTwitterStrategy = () => {
+    return new TwitterStrategy(
+        {
+            consumerKey: twitter_consumer_id,
+            consumerSecret: twitter_consumer_secret,
+            callbackURL: callback_url + "/auth/twitter/callback",
+        },
+        (accessToken, refreshToken, profile, done) => {
+            //console.log({accessToken,refreshToken,profile})
+            done(null, { profile });
+        }
+    );
+}; */
 
 // 1
 
@@ -132,7 +148,7 @@ module.exports = {
     isAdmin,
     isEditor,
     useGoogleStrategy,
+    useGitHubStrategy,
     // useFacebookStrategy,
-    // useGitHubStrategy,
     // useTwitterStrategy
 };

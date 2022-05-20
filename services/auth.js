@@ -21,8 +21,9 @@ class Auth {
             id: user.id,
             name: user.name,
             email: user.email,
-            img: user.img,
+            img: user.img ? user.img : "",
             role: user.role ? user.role : 0,
+            provider: user.provider ? user.provider : "",
         };
         const token = jwt.sign(data, jwt_secret, { expiresIn: "1d" });
         return { success: true, data, token };
@@ -69,7 +70,7 @@ class Auth {
 
     async signup(credentials, file) {
         if (!credentials.email || !credentials.password || !credentials.name) {
-            return { success: false, message: "Ingresa credenciales" };
+            return { success: false, message: "Rellena los campos" };
         }
 
         if (await this.users.getByEmail(credentials.email)) {
@@ -88,7 +89,7 @@ class Auth {
         if (credentials.name.length > 12) {
             return {
                 success: false,
-                message: "El nombre no puede sobrepasar los 12 caracteres",
+                message: "El nombre no puede tener mas de 12 caracteres",
             };
         }
         credentials.password = await this.hashPassword(credentials.password);
@@ -122,6 +123,7 @@ class Auth {
                 role: 10,
                 provider: profile.provider,
                 idProvider: profile.id,
+                img: profile.photos ? profile.photos[0].value : "",
             });
         }
         return this.getToken(user);

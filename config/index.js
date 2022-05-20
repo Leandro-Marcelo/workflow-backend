@@ -10,9 +10,10 @@ const config = {
     db_host: process.env.DD_HOST,
     db_name: process.env.DB_NAME,
     // Passport
-    callback_url: process.env.NODE_ENV
-        ? process.env.CALLBACK_URL_DEVELOPMENT + ":" + process.env.PORT
-        : process.env.CALLBACK_URL,
+    callback_url:
+        process.env.NODE_ENV === "dev"
+            ? process.env.CALLBACK_URL_DEVELOPMENT
+            : process.env.CALLBACK_URL,
     oauth_client_id: process.env.OAUTH_CLIENT_ID,
     oauth_client_secret: process.env.OAUTH_CLIENT_SECRET,
     github_client_id: process.env.GITHUB_CLIENT_ID,
@@ -28,3 +29,11 @@ const config = {
     bucket_name: process.env.BUCKET_NAME,
 };
 module.exports = config;
+
+/* 
+    callback_url: process.env.NODE_ENV
+        ? process.env.CALLBACK_URL_DEVELOPMENT + ":" + process.env.PORT
+        : process.env.CALLBACK_URL,
+
+
+*/

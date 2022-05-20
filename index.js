@@ -22,6 +22,7 @@ app.use(
     cors({
         origin: [
             "http://localhost:3000",
+            "http://localhost:3000/teams",
             "http://localhost:3001",
             "https://leandro-marcelo.github.io",
         ],
@@ -50,6 +51,6 @@ app.get("/", (req, res) => {
 });
 
 app.listen(config.port, () => {
-    /*    console.log("Modo:", env);
-    console.log("listening on: http://localhost:" + port); */
+    /*  console.log("Mode:", process.env.NODE_ENV);
+    console.log("listening on: http://localhost:" + config.port); */
 });

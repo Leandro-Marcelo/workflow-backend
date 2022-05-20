@@ -1,6 +1,10 @@
 const express = require("express");
-const { useGoogleStrategy, isRegular } = require("../middleware/auth");
-// const { useGoogleStrategy, useFacebookStrategy,useGitHubStrategy,useTwitterStrategy, isRegular } = require("../middleware/auth")
+const {
+    useGoogleStrategy,
+    useGitHubStrategy,
+    isRegular,
+} = require("../middleware/auth");
+// const { useGoogleStrategy, useFacebookStrategy,,useTwitterStrategy, isRegular } = require("../middleware/auth")
 const passport = require("passport");
 
 const Auth = require("../services/auth");
@@ -16,8 +20,8 @@ function auth(app) {
     app.use(passport.initialize());
 
     passport.use(useGoogleStrategy());
+    passport.use(useGitHubStrategy());
     // passport.use(useFacebookStrategy())
-    // passport.use(useGitHubStrategy())
     // passport.use(useTwitterStrategy())
 
     passport.serializeUser((user, done) => {
@@ -27,7 +31,6 @@ function auth(app) {
     router.post("/login", async (req, res) => {
         const { email, password } = req.body;
         const response = await authService.login(email, password);
-        /* console.log(response); */
 
         return tokenToCookie(res, response);
     });
@@ -74,28 +77,40 @@ function auth(app) {
             return tokenToCookie(res, response);
         }
     );
-    // router.get('/facebook',passport.authenticate("facebook"))
-    // router.get('/facebook/callback',passport.authenticate("facebook"),async (req,res)=>{
-    //     const response = await authService.loginProvider(req.user.profile)
-    //     return tokenToCookie(res,response)
+    /*    router.get("/facebook", passport.authenticate("facebook"));
+    router.get(
+        "/facebook/callback",
+        passport.authenticate("facebook"),
+        async (req, res) => {
+            const response = await authService.loginProvider(req.user.profile);
+            return tokenToCookie(res, response);
 
-    //     //return res.json({message:"Bienvenido"})
-    // })
-    // router.get('/github',passport.authenticate("github"))
-    // router.get('/github/callback',passport.authenticate("github"),async (req,res)=>{
-    //     const response = await authService.loginProvider(req.user.profile)
+            //return res.json({message:"Bienvenido"})
+        }
+    ); */
+    router.get("/github", passport.authenticate("github"));
+    router.get(
+        "/github/callback",
+        passport.authenticate("github"),
+        async (req, res) => {
+            const response = await authService.loginProvider(req.user.profile);
 
-    //     return tokenToCookie(res,response)
+            return tokenToCookie(res, response);
 
-    //     //return res.json({message:"Bienvenido"})
-    // })
-    // router.get('/twitter',passport.authenticate("twitter"))
-    // router.get('/twitter/callback',passport.authenticate("twitter"),async (req,res)=>{
-    //     const response = await authService.loginProvider(req.user.profile)
-    //     return tokenToCookie(res,response)
+            //return res.json({message:"Bienvenido"})
+        }
+    );
+    /*    router.get("/twitter", passport.authenticate("twitter"));
+    router.get(
+        "/twitter/callback",
+        passport.authenticate("twitter"),
+        async (req, res) => {
+            const response = await authService.loginProvider(req.user.profile);
+            return tokenToCookie(res, response);
 
-    //     //return res.json({message:"Bienvenido"})
-    // })
+            //return res.json({message:"Bienvenido"})
+        }
+    ); */
 }
 
 module.exports = auth;

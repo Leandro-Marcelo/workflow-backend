@@ -9,18 +9,17 @@ function teams(app) {
 
     const teamsService = new Teams();
 
-    /* Shows a specific team with their members */
-    /* solo deberia traer las listas y tareas, los comentarios se cargarían despues al clickear seguramente */
-    router.get("/:id", isRegular, async (req, res) => {
-        console.log(req.user.id);
-        const team = await teamsService.getTeam(req.params.id, req.user.id);
-        return res.json(team);
-    });
-
-    /* displays the members of the teams (also the Leader) you belong to  */
+    /* Busca en el modelo de teams donde en la lista de miembros este el id del currentUserId */
     router.get("/", isRegular, async (req, res) => {
         const teams = await teamsService.getTeams(req.user.id);
         return res.json(teams);
+    });
+
+    /* Shows a specific team with their members */
+    /* solo deberia traer las listas y tareas, los comentarios se cargarían despues al clickear seguramente */
+    router.get("/:id", isRegular, async (req, res) => {
+        const team = await teamsService.getTeam(req.params.id, req.user.id);
+        return res.json(team);
     });
 
     /* OJO importante el orden de los middleware, primero verifico si es un usuario Regular y recién pasa al middleware de subir el archivo */
@@ -31,7 +30,7 @@ function teams(app) {
         /* el archivo/imagen se encuentra en req.file porque multer lo pone ahí */
         const team = await teamsService.create(req.user.id, req.body, req.file);
         if (team.success) {
-            return res.status(200).json(team);
+            return res.status(201).json(team);
         }
         return res.status(401).json(team);
     });

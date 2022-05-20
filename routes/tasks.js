@@ -29,7 +29,6 @@ function tasks(app) {
         isRegular,
         upload.single("file"),
         async (req, res) => {
-            console.log(req.user);
             const result = await taskService.addComment(
                 req.params.idTask,
                 req.user,

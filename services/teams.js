@@ -7,6 +7,33 @@ const UserService = require("./users");
 const { uploadFile } = require("../libs/storage");
 
 class Teams {
+    /* Al momento mostrar idLeader, mongoose va a tomar el valor de ese idLeader y lo va almacenar en una propiedad llamada _id, pero no le esta creando un _id sino crea la propiedad y le pone el valor que ingresó el usuario (al momento de crear un team), esto lo hace porque va a utilizar ese _id para hacer las subconsultas en la colletion de users y así ponerle abajo las propiedades de name y email, todo esto porque estamos utilizando populate, ya que si vieramos idLeader en la base de datos sería idLeader:192938219321 y su id basicamente */
+
+    async getTeams(idUser) {
+        const teams = await TeamModel.find({
+            members: { $elemMatch: { _id: idUser } },
+        });
+
+        return teams;
+    }
+
+    async getTeam(idTeam, userId) {
+        const team = await TeamModel.find({ _id: idTeam })
+            .populate("members._id", "name email img role")
+            .populate("idLeader", "name email")
+            .populate({
+                path: "lists",
+                populate: { path: "tasks", model: "tasks" },
+            });
+
+        const user = team[0].members.filter(
+            (member) => String(member._id._id) === userId
+        );
+
+        /* tomo el primer elemento del array porque me lo devuelve en array y ademas sé que solamente existe 1 por lo tanto, se va almacenar ahí */
+        return { team: team[0], userRole: user[0].role };
+    }
+
     async update(id, data) {
         const team = await TeamModel.findByIdAndUpdate(id, data, { new: true });
 
@@ -54,40 +81,6 @@ class Teams {
             const team = await TeamModel.create(newTeam);
             return { success: true, team };
         }
-    }
-
-    /* Al momento mostrar idLeader, mongoose va a tomar el valor de ese idLeader y lo va almacenar en una propiedad llamada _id, pero no le esta creando un _id sino crea la propiedad y le pone el valor que ingresó el usuario (al momento de crear un team), esto lo hace porque va a utilizar ese _id para hacer las subconsultas en la colletion de users y así ponerle abajo las propiedades de name y email, todo esto porque estamos utilizando populate, ya que si vieramos idLeader en la base de datos sería idLeader:192938219321 y su id basicamente */
-
-    /* Si bien trae los teams, no de un project en específico sino todos los teams a los que pertenece */
-    async getTeams(idUser) {
-        const teams = await TeamModel.find({
-            members: { $elemMatch: { _id: idUser } },
-        });
-        /* como ahora en el objeto que van dentro del array son tipo así: members:[{_id:1312321,role:"normal"}], tendríamos que acceder al _id como si fuera un objeto de JS*/
-        /*  .populate("members._id", "name email")
-            .populate("idLeader", "name email"); */
-
-        return teams;
-    }
-
-    /* esto de arriba estaba  */
-
-    /* Show the members, Leader, lists,  */
-    async getTeam(idTeam, userId) {
-        const team = await TeamModel.find({ _id: idTeam })
-            .populate("members._id", "name email img role")
-            .populate("idLeader", "name email")
-            .populate({
-                path: "lists",
-                populate: { path: "tasks", model: "tasks" },
-            });
-
-        const user = team[0].members.filter(
-            (member) => String(member._id._id) === userId
-        );
-
-        /* tomo el primer elemento del array porque me lo devuelve en array y ademas sé que solamente existe 1 por lo tanto, se va almacenar ahí */
-        return { team: team[0], userRole: user[0].role };
     }
 
     async addMember(idTeam, idNewMember) {

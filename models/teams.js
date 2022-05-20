@@ -5,7 +5,6 @@ const { Schema } = mongoose;
 const teamSchema = new Schema({
     idLeader: {
         type: mongoose.Schema.Types.ObjectId,
-        /* estos ref hacen referencia a como se llama el otro modelo, basicamente la línea 15 del modelo de users lo dice, nombre del modelo y el esquema esos dos parametros pasa, tambien es como se llama en mongodb */
         ref: "users",
     },
     /* tendríamos que hacer el nombre del equipo único no? Creo que no porque en nuestro discord por ejemplo, somos el team cmamut y en otro país puede que haya un equipo igual xd, pero no porque nosotros nos llamamos así ellos no pueden xd */
